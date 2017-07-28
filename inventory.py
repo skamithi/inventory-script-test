@@ -58,15 +58,18 @@ class DockerInventory(object):
                                         [_env_group_idx]].append(_hostitem)
 
         self.inventory['_meta'] = {'hostvars': {}}
+        self.inventory['ungrouped']  = { 'hosts': [] }
         for _i in self.host_range:
-            self.inventory['_meta']['hostvars']["ts%03d" % (_i)] = {
-                'ansible_port': "9%03d" % (_i),
+            _hostname = "%s%03d" % (self.hostname_base, _i)
+            self.inventory['ungrouped']['hosts'].append(_hostname)
+            self.inventory['_meta']['hostvars'][_hostname] = {
+                'ansible_port': "%03d" % (_i),
                 'ansible_host': '192.168.122.1'
             }
         for _ansible_group, _hostnumbers in self.ansible_groups.items():
-            self.inventory[_ansible_group] = {}
+            self.inventory[_ansible_group] = {'hosts': {}}
             self.inventory[_ansible_group]['hosts'] = \
-                ["%s%02d" % (self.hostname_base, x) for x in _hostnumbers]
+                ["%s%03d" % (self.hostname_base, x) for x in _hostnumbers]
 
         return self.inventory
 
