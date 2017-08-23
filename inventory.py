@@ -6,7 +6,7 @@ try:
     import json
 except ImportError:
     import simplejson as json
-
+import os
 
 class DockerInventory(object):
 
@@ -45,6 +45,8 @@ class DockerInventory(object):
         _software_groupings = self.chunks(self.host_range,
                                           (self.host_count /
                                            len(self.software_groups)))
+
+        self.inventory['_meta'] = {'hostvars': {}}
         for _software_group_idx, _groupone in enumerate(_software_groupings):
             _env_groupings = self.chunks(
                 _groupone,
@@ -52,20 +54,24 @@ class DockerInventory(object):
             )
             for _env_group_idx, _grouptwo in enumerate(_env_groupings):
                 for _hostitem in _grouptwo:
+                    _app_category = os.environ.get('APP_CATEGORY')
+                    if _app_category and \
+                            _app_category != self.software_groups[_software_group_idx]:
+                        continue
                     self.ansible_groups[self.software_groups
                                         [_software_group_idx]].append(_hostitem)
                     self.ansible_groups[self.environment_groups
                                         [_env_group_idx]].append(_hostitem)
 
-        self.inventory['_meta'] = {'hostvars': {}}
-        self.inventory['ungrouped']  = { 'hosts': [] }
-        for _i in self.host_range:
-            _hostname = "%s%03d" % (self.hostname_base, _i)
-            self.inventory['ungrouped']['hosts'].append(_hostname)
-            self.inventory['_meta']['hostvars'][_hostname] = {
-                'ansible_port': "9%03d" % (_i),
-                'ansible_host': '192.168.122.1'
-            }
+                    _hostname = "%s%03d" % (self.hostname_base, _hostitem)
+                    self.inventory['_meta']['hostvars'][_hostname] = {
+                        'ansible_port': "9%03d" % (_hostitem),
+                        'ansible_host': '192.168.122.1'
+                    }
+#        self.inventory['ungrouped']  = { 'hosts': [] }
+        #for _i in self.host_range:
+#            self.inventory['ungrouped']['hosts'].append(_hostname)
+        #    }
         for _ansible_group, _hostnumbers in self.ansible_groups.items():
             self.inventory[_ansible_group] = {'hosts': {}}
             self.inventory[_ansible_group]['hosts'] = \
