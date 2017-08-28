@@ -79,8 +79,8 @@ class DockerInventory(object):
                     self.inventory['_meta']['hostvars'][_hostname] = {
                         'ansible_port': "9%03d" % (_hostitem),
                         'ansible_host': _ansible_host,
-                        'has_username': _has_username,
-                        'has_password': _has_password
+                        'username': _username,
+                        'password': _password
                     }
 
         for _ansible_group, _hostnumbers in self.ansible_groups.items():
