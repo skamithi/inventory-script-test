@@ -42,6 +42,18 @@ class DockerInventory(object):
         return [l[i:i + n] for i in xrange(0, len(l), n)]
 
     def docker_inventory(self):
+        _ansible_host = 'localhost'
+        _tmp_ansible_host = os.environ.get('DOCKER_HOST')
+        _username = os.environ.get('INVENTORY_PASSWORD')
+        _password = os.environ.get('INVENTORY_USERNAME')
+        _has_password = False
+        _has_username = True
+        if _username:
+            _has_username = True
+        if _password:
+            _has_password = True
+        if _tmp_ansible_host:
+            _ansible_host = _tmp_ansible_host
         _software_groupings = self.chunks(self.host_range,
                                           (self.host_count /
                                            len(self.software_groups)))
@@ -66,12 +78,11 @@ class DockerInventory(object):
                     _hostname = "%s%03d" % (self.hostname_base, _hostitem)
                     self.inventory['_meta']['hostvars'][_hostname] = {
                         'ansible_port': "9%03d" % (_hostitem),
-                        'ansible_host': '192.168.122.1'
+                        'ansible_host': _ansible_host,
+                        'has_username': _has_username,
+                        'has_password': _has_password
                     }
-#        self.inventory['ungrouped']  = { 'hosts': [] }
-        #for _i in self.host_range:
-#            self.inventory['ungrouped']['hosts'].append(_hostname)
-        #    }
+
         for _ansible_group, _hostnumbers in self.ansible_groups.items():
             self.inventory[_ansible_group] = {'hosts': {}}
             self.inventory[_ansible_group]['hosts'] = \
