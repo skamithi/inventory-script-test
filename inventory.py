@@ -16,7 +16,7 @@ class DockerInventory(object):
         self.hostname_base = 'ts'
         self.software_groups = ['app', 'web', 'db']
         self.environment_groups = ['dev', 'test', 'prod']
-        self.host_count = 36
+        self.host_count = 9
         self.host_range = range(1, self.host_count+1)
         self.ansible_groups = {}
         for _group in self.software_groups:
@@ -59,6 +59,7 @@ class DockerInventory(object):
                                            len(self.software_groups)))
 
         self.inventory['_meta'] = {'hostvars': {}}
+        self.inventory['all']  = []
         for _software_group_idx, _groupone in enumerate(_software_groupings):
             _env_groupings = self.chunks(
                 _groupone,
@@ -82,6 +83,7 @@ class DockerInventory(object):
                         'username': _username,
                         'password': _password
                     }
+                    self.inventory['all'].append(_hostname)
 
         for _ansible_group, _hostnumbers in self.ansible_groups.items():
             self.inventory[_ansible_group] = {'hosts': {}}
